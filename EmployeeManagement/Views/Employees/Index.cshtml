@@ -1,0 +1,105 @@
+@model EmployeeListViewModel
+@{
+    ViewData["Title"] = "ข้อมูลพนักงาน";
+    string NextSort(string column) => Model.Sort == column ? column + "_desc" : column;
+    string SortState(string column) => Model.Sort == column ? "ascending" : Model.Sort == column + "_desc" ? "descending" : "none";
+    var startPage = Math.Max(1, Model.Page - 2);
+    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+    startPage = Math.Max(1, endPage - 4);
+}
+<div class="page-heading">
+    <div><div class="eyebrow">PEOPLE DIRECTORY</div><h1>ข้อมูลพนักงาน</h1><p>ค้นหาและดูแลข้อมูลสมาชิกในทีมของคุณ</p></div>
+    <a class="btn btn-primary" asp-action="Create"><span aria-hidden="true">＋</span> เพิ่มพนักงาน</a>
+</div>
+<section class="directory-card" aria-labelledby="directory-title">
+    <div class="directory-intro"><h2 id="directory-title">รายชื่อพนักงาน <span class="count-badge">@Model.TotalCount.ToString("N0")</span></h2><span class="text-secondary">@(Model.Search is null ? "พนักงานทั้งหมด" : "ผลการค้นหา")</span></div>
+    <form asp-action="Index" method="get" class="filter-bar" role="search">
+        <div class="search-control">
+            <label for="search" class="form-label">ค้นหาพนักงาน</label>
+            <input id="search" name="search" value="@Model.Search" maxlength="150" type="search" class="form-control" placeholder="รหัสพนักงาน ชื่อ หรืออีเมล" />
+        </div>
+        <div>
+            <label for="sort" class="form-label">เรียงตาม</label>
+            <select id="sort" name="sort" class="form-select">
+                @foreach (var option in new[] { ("code", "รหัส: น้อยไปมาก"), ("code_desc", "รหัส: มากไปน้อย"), ("name", "ชื่อ: น้อยไปมาก"), ("name_desc", "ชื่อ: มากไปน้อย"), ("email", "อีเมล: น้อยไปมาก"), ("email_desc", "อีเมล: มากไปน้อย"), ("department", "แผนก: น้อยไปมาก"), ("department_desc", "แผนก: มากไปน้อย"), ("salary", "เงินเดือน: น้อยไปมาก"), ("salary_desc", "เงินเดือน: มากไปน้อย"), ("status", "Inactive ก่อน"), ("status_desc", "Active ก่อน") })
+                {
+                    <option value="@option.Item1" selected="@(Model.Sort == option.Item1)">@option.Item2</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label for="pageSize" class="form-label">แถวต่อหน้า</label>
+            <select id="pageSize" name="pageSize" class="form-select">
+                @foreach (var size in new[] { 10, 25, 50 })
+                {
+                    <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">ค้นหา</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">ล้าง</a>
+    </form>
+    @if (Model.Employees.Count == 0)
+    {
+        <div class="empty-state"><div class="empty-icon" aria-hidden="true">P</div><h3>@(Model.Search is null ? "เริ่มต้นสร้างทีมของคุณ" : "ไม่พบพนักงานที่ค้นหา")</h3>
+            <p>@(Model.Search is null ? "เพิ่มข้อมูลพนักงานคนแรก เพื่อเริ่มจัดการรายชื่อในระบบ" : "ลองค้นหาด้วยรหัส ชื่อ หรืออีเมลอื่น")</p>
+            @if (Model.Search is null) { <a class="btn btn-primary" asp-action="Create">เพิ่มพนักงานคนแรก</a> }
+            else { <a class="btn btn-outline-primary" asp-action="Index">ดูพนักงานทั้งหมด</a> }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table employee-table align-middle">
+                <caption class="visually-hidden">รายชื่อพนักงาน หน้า @Model.Page จาก @Model.TotalPages</caption>
+                <thead><tr>
+                    @foreach (var column in new[] { ("code", "รหัสพนักงาน"), ("name", "ชื่อพนักงาน"), ("email", "อีเมล"), ("department", "แผนก"), ("salary", "เงินเดือน (บาท)"), ("status", "สถานะ") })
+                    {
+                        <th scope="col" aria-sort="@SortState(column.Item1)"><a asp-action="Index" asp-route-search="@Model.Search" asp-route-sort="@NextSort(column.Item1)" asp-route-pageSize="@Model.PageSize">@column.Item2</a></th>
+                    }
+                    <th scope="col" class="text-end">จัดการ</th>
+                </tr></thead>
+                <tbody>
+                @foreach (var employee in Model.Employees)
+                {
+                    <tr>
+                        <td><span class="employee-code">@employee.EmployeeCode</span></td>
+                        <td><a class="employee-name" asp-action="Details" asp-route-id="@employee.Id">@employee.FirstName @employee.LastName</a></td>
+                        <td class="text-break">@employee.Email</td>
+                        <td>@(employee.Department ?? "—")</td>
+                        <td class="salary">@employee.Salary.ToString("N2", CultureInfo.GetCultureInfo("en-US"))</td>
+                        <td><span class="status-badge @(employee.IsActive ? "status-active" : "status-inactive")">@(employee.IsActive ? "Active" : "Inactive")</span></td>
+                        <td><div class="row-actions">
+                            <a asp-action="Details" asp-route-id="@employee.Id" aria-label="ดูข้อมูล @employee.EmployeeCode">ดู</a>
+                            <a asp-action="Edit" asp-route-id="@employee.Id" aria-label="แก้ไข @employee.EmployeeCode">แก้ไข</a>
+                            <a class="delete-link" asp-action="Delete" asp-route-id="@employee.Id" aria-label="ลบ @employee.EmployeeCode">ลบ</a>
+                        </div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    <div class="pagination-bar">
+        <span class="text-secondary">แสดง @Model.FirstItem–@Model.LastItem จาก @Model.TotalCount.ToString("N0") รายการ</span>
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="หน้ารายชื่อพนักงาน"><ul class="pagination mb-0">
+                @if (Model.Page > 1)
+                {
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="1" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort" asp-route-pageSize="@Model.PageSize">แรก</a></li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort" asp-route-pageSize="@Model.PageSize">ก่อนหน้า</a></li>
+                }
+                @for (var number = startPage; number <= endPage; number++)
+                {
+                    <li class="page-item @(number == Model.Page ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-page="@number" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort" asp-route-pageSize="@Model.PageSize" aria-current="@(number == Model.Page ? "page" : null)" aria-label="หน้า @number">@number</a></li>
+                }
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort" asp-route-pageSize="@Model.PageSize">ถัดไป</a></li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@Model.TotalPages" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort" asp-route-pageSize="@Model.PageSize">สุดท้าย</a></li>
+                }
+            </ul></nav>
+        }
+    </div>
+</section>

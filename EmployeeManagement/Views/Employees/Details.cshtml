@@ -1,0 +1,5 @@
+@model Employee
+@{ ViewData["Title"] = "รายละเอียดพนักงาน"; }
+<a class="back-link" asp-action="Index">รายชื่อพนักงาน</a>
+<div class="page-heading"><div><div class="eyebrow">EMPLOYEE PROFILE</div><h1>รายละเอียดพนักงาน</h1><p>ข้อมูลส่วนตัวและข้อมูลการทำงาน</p></div><a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">แก้ไขข้อมูล</a></div>
+<div class="form-card"><partial name="_EmployeeDetails" model="Model" /><div class="form-actions"><a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">ลบพนักงาน</a><a class="btn btn-outline-secondary" asp-action="Index">กลับรายชื่อ</a></div></div>

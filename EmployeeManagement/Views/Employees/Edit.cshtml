@@ -1,0 +1,10 @@
+@model EmployeeViewModel
+@{ ViewData["Title"] = "แก้ไขข้อมูลพนักงาน"; }
+<a class="back-link" asp-action="Index">รายชื่อพนักงาน</a>
+<div class="page-heading"><div><div class="eyebrow">EDIT EMPLOYEE</div><h1>แก้ไขข้อมูลพนักงาน</h1><p>ปรับปรุงข้อมูลของ @Model.EmployeeCode</p></div></div>
+<div class="form-card">
+    <form asp-action="Edit" asp-route-id="@ViewData["EmployeeId"]" method="post" asp-antiforgery="true" data-employee-form>
+        <partial name="_EmployeeForm" model="Model" />
+        <div class="form-actions"><a class="btn btn-outline-secondary" asp-action="Index">ยกเลิก</a><button class="btn btn-primary" type="submit">บันทึกการแก้ไข</button></div>
+    </form>
+</div>

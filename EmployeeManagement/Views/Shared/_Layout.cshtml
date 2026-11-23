@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · PeopleDesk</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="visually-hidden-focusable skip-link" href="#main-content">ข้ามไปยังเนื้อหา</a>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Employees" asp-action="Index"><span class="brand-symbol" aria-hidden="true">P</span>PeopleDesk</a>
+            <div class="sidebar-caption">WORKSPACE</div>
+            <nav aria-label="เมนูหลัก">
+                <a class="nav-item-link active" asp-controller="Employees" asp-action="Index" aria-current="page">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></svg>
+                    ข้อมูลพนักงาน
+                </a>
+            </nav>
+            <div class="sidebar-footer">Employee Management<br /><span>จัดการทีมของคุณในที่เดียว</span></div>
+        </aside>
+        <div class="workspace">
+            <header class="topbar"><span>ระบบจัดการข้อมูลพนักงาน</span><span class="workspace-label">ฝ่ายทรัพยากรบุคคล</span></header>
+            <main id="main-content" class="content" tabindex="-1">
+                @if (TempData["Success"] is string message)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="status">
+                        @message
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="ปิดข้อความ"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+            <footer class="app-footer">PeopleDesk <span>Employee Management System</span></footer>
+        </div>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

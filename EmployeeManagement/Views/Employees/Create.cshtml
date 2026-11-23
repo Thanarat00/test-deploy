@@ -1,0 +1,10 @@
+@model EmployeeViewModel
+@{ ViewData["Title"] = "เพิ่มพนักงาน"; }
+<a class="back-link" asp-action="Index">รายชื่อพนักงาน</a>
+<div class="page-heading"><div><div class="eyebrow">NEW EMPLOYEE</div><h1>เพิ่มพนักงาน</h1><p>กรอกข้อมูลเพื่อเพิ่มสมาชิกใหม่ในทีม</p></div></div>
+<div class="form-card">
+    <form asp-action="Create" method="post" asp-antiforgery="true" data-employee-form>
+        <partial name="_EmployeeForm" model="Model" />
+        <div class="form-actions"><a class="btn btn-outline-secondary" asp-action="Index">ยกเลิก</a><button class="btn btn-primary" type="submit">บันทึกพนักงาน</button></div>
+    </form>
+</div>

@@ -1,0 +1,12 @@
+@model Employee
+<div class="profile-heading"><div class="profile-avatar" aria-hidden="true">@StringInfo.GetNextTextElement(Model.FirstName)</div><div><h2>@Model.FirstName @Model.LastName</h2><span class="employee-code">@Model.EmployeeCode</span></div><span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">@(Model.IsActive ? "Active" : "Inactive")</span></div>
+<dl class="detail-grid">
+    <div><dt>รหัสพนักงาน</dt><dd>@Model.EmployeeCode</dd></div>
+    <div><dt>อีเมล</dt><dd class="text-break">@Model.Email</dd></div>
+    <div><dt>ชื่อ</dt><dd>@Model.FirstName</dd></div>
+    <div><dt>นามสกุล</dt><dd>@Model.LastName</dd></div>
+    <div><dt>แผนก</dt><dd>@(Model.Department ?? "—")</dd></div>
+    <div><dt>เงินเดือน (บาท)</dt><dd>@Model.Salary.ToString("N2", CultureInfo.GetCultureInfo("en-US"))</dd></div>
+    <div><dt>วันที่สร้าง (UTC)</dt><dd><time datetime="@Model.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ")">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US"))</time></dd></div>
+    <div><dt>แก้ไขล่าสุด (UTC)</dt><dd>@(Model.UpdatedAt?.ToString("dd MMM yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US")) ?? "ยังไม่มีการแก้ไข")</dd></div>
+</dl>

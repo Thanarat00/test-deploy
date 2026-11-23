@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  </PropertyGroup>
+  <!-- Compile the actual MVC source and Razor views without database packages. -->
+  <ItemGroup>
+    <Compile Include="../../EmployeeManagement/Data/DatabaseServerSettings.cs" Link="Data/DatabaseServerSettings.cs" />
+    <Compile Include="../../EmployeeManagement/Models/*.cs" Link="Models/%(Filename)%(Extension)" />
+    <Compile Include="../../EmployeeManagement/ViewModels/*.cs" Link="ViewModels/%(Filename)%(Extension)" />
+    <Compile Include="../../EmployeeManagement/Services/Interfaces/*.cs" Link="Services/%(Filename)%(Extension)" />
+    <Compile Include="../../EmployeeManagement/Controllers/*.cs" Link="Controllers/%(Filename)%(Extension)" />
+    <Content Include="../../EmployeeManagement/Views/**/*.cshtml" Link="Views/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

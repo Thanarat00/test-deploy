@@ -1,0 +1,46 @@
+@model EmployeeViewModel
+<div asp-validation-summary="All" class="validation-summary text-danger" role="alert"></div>
+<div class="client-validation-summary alert alert-danger d-none" role="alert">กรุณาตรวจสอบข้อมูลในช่องที่ระบุ</div>
+<div class="form-section-title"><h2>ข้อมูลส่วนตัว</h2><p>ช่องที่มีเครื่องหมาย <span class="text-danger">*</span> จำเป็นต้องกรอก</p></div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <label asp-for="EmployeeCode" class="form-label"></label><span class="required-mark" aria-hidden="true"> *</span>
+        <input asp-for="EmployeeCode" class="form-control" required maxlength="20" autocomplete="off" placeholder="เช่น EMP001" aria-describedby="EmployeeCode-error code-help" />
+        <div id="code-help" class="form-text">รหัสต้องไม่ซ้ำกับพนักงานคนอื่น</div>
+        <span asp-validation-for="EmployeeCode" id="EmployeeCode-error" class="text-danger field-error"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label"></label><span class="required-mark" aria-hidden="true"> *</span>
+        <input asp-for="Email" class="form-control" type="email" required maxlength="150" autocomplete="email" placeholder="name@company.com" aria-describedby="Email-error" />
+        <span asp-validation-for="Email" id="Email-error" class="text-danger field-error"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="FirstName" class="form-label"></label><span class="required-mark" aria-hidden="true"> *</span>
+        <input asp-for="FirstName" class="form-control" required maxlength="100" autocomplete="given-name" aria-describedby="FirstName-error" />
+        <span asp-validation-for="FirstName" id="FirstName-error" class="text-danger field-error"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="LastName" class="form-label"></label><span class="required-mark" aria-hidden="true"> *</span>
+        <input asp-for="LastName" class="form-control" required maxlength="100" autocomplete="family-name" aria-describedby="LastName-error" />
+        <span asp-validation-for="LastName" id="LastName-error" class="text-danger field-error"></span>
+    </div>
+</div>
+<div class="form-section-title section-divider"><h2>ข้อมูลการทำงาน</h2><p>แผนก เงินเดือน และสถานะพนักงาน</p></div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <label asp-for="Department" class="form-label"></label>
+        <input asp-for="Department" class="form-control" maxlength="100" placeholder="เช่น วิศวกรรม" aria-describedby="Department-error" />
+        <span asp-validation-for="Department" id="Department-error" class="text-danger field-error"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Salary" class="form-label"></label><span class="required-mark" aria-hidden="true"> *</span>
+        <input asp-for="Salary" class="form-control" type="number" required min="0" max="9999999999.99" step="0.01" inputmode="decimal" placeholder="0.00" aria-describedby="Salary-error salary-help" />
+        <div class="form-text" id="salary-help">ทศนิยมได้ไม่เกิน 2 ตำแหน่ง</div>
+        <span asp-validation-for="Salary" id="Salary-error" class="text-danger field-error"></span>
+    </div>
+    <div class="col-12"><div class="form-check form-switch status-switch">
+        <input asp-for="IsActive" class="form-check-input" role="switch" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+        <div class="form-text">เปิดสำหรับพนักงานที่ยังปฏิบัติงานอยู่</div>
+    </div></div>
+</div>

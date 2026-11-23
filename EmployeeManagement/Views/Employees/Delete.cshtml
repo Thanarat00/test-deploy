@@ -1,0 +1,11 @@
+@model Employee
+@{ ViewData["Title"] = "ยืนยันการลบพนักงาน"; }
+<a class="back-link" asp-action="Index">รายชื่อพนักงาน</a>
+<div class="page-heading"><div><div class="eyebrow">DELETE EMPLOYEE</div><h1>ยืนยันการลบพนักงาน</h1><p>ตรวจสอบข้อมูลพนักงานก่อนยืนยัน</p></div></div>
+<div class="form-card">
+    <div class="alert alert-danger" role="alert"><strong>ต้องการลบ @Model.EmployeeCode ใช่หรือไม่?</strong><br />ข้อมูลพนักงานจะถูกลบถาวร และไม่สามารถเรียกคืนผ่านระบบได้</div>
+    <partial name="_EmployeeDetails" model="Model" />
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" asp-antiforgery="true" class="form-actions" data-delete-form>
+        <a class="btn btn-outline-secondary" asp-action="Index">ยกเลิก</a><button class="btn btn-danger" type="submit">ยืนยันลบพนักงาน</button>
+    </form>
+</div>

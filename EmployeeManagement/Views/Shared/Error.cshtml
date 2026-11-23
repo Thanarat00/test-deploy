@@ -1,0 +1,8 @@
+@model ErrorViewModel
+@{ ViewData["Title"] = "ไม่สามารถดำเนินการได้"; }
+<div class="page-heading"><div><h1>ไม่สามารถดำเนินการได้</h1><p>เกิดข้อผิดพลาดระหว่างประมวลผล กรุณาลองอีกครั้ง</p></div></div>
+<div class="form-card">
+    <p>หากปัญหายังเกิดขึ้น กรุณาติดต่อผู้ดูแลระบบพร้อมรหัสอ้างอิงด้านล่าง</p>
+    @if (Model.ShowRequestId) { <p>รหัสอ้างอิง: <code>@Model.RequestId</code></p> }
+    <a class="btn btn-primary" asp-controller="Employees" asp-action="Index">กลับรายชื่อพนักงาน</a>
+</div>
