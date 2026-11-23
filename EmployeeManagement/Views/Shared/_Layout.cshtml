@@ -11,15 +11,36 @@
     <a class="visually-hidden-focusable skip-link" href="#main-content">ข้ามไปยังเนื้อหา</a>
     <div class="app-shell">
         <aside class="sidebar">
-            <a class="brand" asp-controller="Employees" asp-action="Index"><span class="brand-symbol" aria-hidden="true">P</span>PeopleDesk</a>
+            <a class="brand" asp-controller="Employees" asp-action="Index">
+                <span class="brand-symbol" aria-hidden="true">P</span>
+                <span class="brand-text">
+                    <span class="brand-name">PeopleDesk</span>
+                    <span class="brand-tag">ระบบบุคคล</span>
+                </span>
+            </a>
             <div class="sidebar-caption">WORKSPACE</div>
             <nav aria-label="เมนูหลัก">
                 <a class="nav-item-link active" asp-controller="Employees" asp-action="Index" aria-current="page">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></svg>
-                    ข้อมูลพนักงาน
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3"/><path d="M17 4a3 3 0 0 1 0 6"/><path d="M21 21v-3a6 6 0 0 0-3-5"/></svg>
+                    </span>
+                    <span class="nav-copy">
+                        <span class="nav-label">ข้อมูลพนักงาน</span>
+                        <span class="nav-hint">รายชื่อและโปรไฟล์ทีม</span>
+                    </span>
                 </a>
             </nav>
-            <div class="sidebar-footer">Employee Management<br /><span>จัดการทีมของคุณในที่เดียว</span></div>
+            <div class="sidebar-footer">
+                <div class="sidebar-card">
+                    <span class="sidebar-card-mark" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></svg>
+                    </span>
+                    <div>
+                        <strong>Employee Management</strong>
+                        <span>จัดการทีมของคุณในที่เดียว</span>
+                    </div>
+                </div>
+            </div>
         </aside>
         <div class="workspace">
             <header class="topbar"><span>ระบบจัดการข้อมูลพนักงาน</span><span class="workspace-label">ฝ่ายทรัพยากรบุคคล</span></header>
