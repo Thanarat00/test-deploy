@@ -213,6 +213,55 @@ dotnet ef migrations remove            # ใช้เมื่อ migration ล�
 
 อย่าแก้ migration ที่ถูกใช้ในฐานข้อมูลร่วมกันแล้ว ให้เพิ่ม migration ใหม่แทน ตัวอย่างคำสั่ง `dotnet ef migrations add InitialCreate` ใช้เฉพาะตอนเริ่มต้นโครงการที่ยังไม่มี migration; ไม่ต้องรันซ้ำกับ repository นี้
 
+## Jenkins deploy อัตโนมัติไป IIS
+
+`Jenkinsfile` ทำงานตามลำดับ Checkout → Check tools → Restore → Build (Release) → Test → Publish artifact → Deploy test to IIS เฉพาะ branch `test` เท่านั้นที่ deploy; branch อื่นและ Pull Request ทำถึงขั้น Publish โดยไม่เปลี่ยนเว็บ
+
+เครื่องนี้ใช้ Jenkins ที่ `http://localhost:8081/`, job `test-deploy`, agent label `windows-iis` และเว็บ IIS ที่ `http://myapp.test/` พอร์ต 8080 เป็นของ Apache การติดตั้ง Jenkins แบบ local นี้ต้องเปิด `Start Jenkins.cmd` ในโฟลเดอร์ `%LOCALAPPDATA%\Jenkins` และเปิด agent ด้วยสิทธิ์ Administrator ให้เชื่อมต่ออยู่จึง deploy ได้
+
+### เตรียมเครื่อง IIS ครั้งแรก
+
+1. ติดตั้ง Git, .NET 10 SDK ตาม `global.json`, Node.js, IIS Management Scripts and Tools และ .NET 10 Hosting Bundle บนเครื่อง IIS
+2. ใน IIS Manager สร้างหรือเลือก Site ที่ Physical Path เป็น `C:\inetpub\wwwroot\test-deploy` โดยตรง ใช้ App Pool แยกสำหรับเว็บนี้ ตั้ง **.NET CLR Version = No Managed Code** และเปิด Site/App Pool ให้ทำงาน สคริปต์ค้นหาชื่อ Site/App Pool จาก Physical Path อัตโนมัติ และจะหยุดหาก App Pool ใช้ร่วมกับเว็บหรือ application อื่น
+3. ตั้ง connection string สำหรับฐานข้อมูลของเซิร์ฟเวอร์ใน `appsettings.Production.json` ที่โฟลเดอร์เว็บ หรือ environment variables ของ App Pool และเตรียมฐานข้อมูล/migrations ให้พร้อม สคริปต์เก็บ `appsettings*.json` ที่มีอยู่บนเซิร์ฟเวอร์ไว้; ถ้ายังไม่มีจะคัดลอกค่าเริ่มต้นจาก publish จึงต้องกำหนดค่าฐานข้อมูลจริงก่อนใช้งาน ไม่ได้ใช้ `appsettings.Local.json` ของเครื่องพัฒนา และ pipeline ไม่รัน migration อัตโนมัติ
+4. เพิ่ม Jenkins Windows agent บนเครื่อง IIS และกำหนด label **`windows-iis`** ใช้บัญชี agent ที่มีสิทธิ์จัดการ IIS และอ่าน/เขียนโฟลเดอร์เว็บกับ `C:\inetpub\deploy-backups\test-deploy` บัญชี IIS App Pool ต้องอ่านไฟล์เว็บได้ หากทดลองรัน agent ใน terminal ให้เปิด terminal แบบ **Run as administrator**
+
+### สร้าง Jenkins job
+
+1. New Item → **Pipeline** → Pipeline → Definition **Pipeline script from SCM** → SCM **Git**
+2. Repository URL: `https://github.com/Thanarat00/test-deploy.git` เลือก credentials ที่อ่าน repository ได้หากจำเป็น
+3. Branch Specifier: **`*/test`** และ Script Path: **`Jenkinsfile`**
+4. Save แล้วกด **Build Now หนึ่งครั้ง** เพื่อให้ Jenkins โหลด pipeline และลงทะเบียน trigger หากยังไม่มี branch `test` ให้นำไฟล์ pipeline นี้เข้า branch ดังกล่าวก่อน
+5. หลังรันครั้งแรก หน้า Build with Parameters จะมี `IIS_APP_POOL` (เว้นว่างเพื่อค้นหาอัตโนมัติ หรือใส่ชื่อที่ตรงกับ Site) และ `IIS_HEALTH_URL` (ค่าเริ่มต้น `http://myapp.test/Employees` ต้องตอบ HTTP 200 โดยเปลี่ยนให้ตรง binding จริงเมื่อใช้เครื่องอื่น) pipeline จะตรวจเว็บหลัง deploy เสมอและย้อนกลับเมื่อไม่ผ่าน ส่วนสคริปต์ PowerShell ที่เรียกใช้นอก Jenkins ยังเลือกไม่ส่ง URL ได้
+
+ใช้ job เดียวสำหรับ deploy ปลายทางนี้ และให้ Jenkins workspace อยู่คนละโฟลเดอร์กับ IIS Physical Path ไม่ต้อง clone/pull source ลงโฟลเดอร์ที่เปิดเป็นเว็บ
+
+### Push แล้ว deploy
+
+pipeline ตั้ง `pollSCM('* * * * *')` ไว้แล้ว Jenkins ตรวจ Git ทุกนาทีและเริ่ม build เมื่อมี commit ใหม่ จึงทำงานได้แม้ Jenkins อยู่ใน LAN โดยไม่เปิดรับ webhook จากอินเทอร์เน็ต หลังตั้งค่าครั้งแรกแล้วใช้:
+
+```powershell
+git push origin test
+```
+
+หากต้องการเริ่มทันทีเมื่อ push ให้ติดตั้ง Jenkins GitHub plugin แล้วเพิ่ม `githubPush()` ในบล็อก `triggers` ของ Jenkinsfile คู่กับ `pollSCM` จากนั้นเพิ่ม GitHub repository → Settings → Webhooks → Push events โดยใช้ Payload URL `https://YOUR-JENKINS/github-webhook/`, Content type `application/json` GitHub ต้องเรียก URL นี้ได้ การ polling เดิมใช้เป็น fallback ได้
+
+### พฤติกรรมตอน deploy
+
+- Build/test/publish ใน workspace และเก็บ `artifacts/publish/` เป็น Jenkins artifacts ก่อนแตะเว็บ Test ใช้ `dotnet run` กับ `EmployeeManagement.Checks` และ `node --check`; ไม่ต้องใช้ MySQL สำหรับ CI และยังไม่รัน MySQL integration checks
+- สคริปต์ `scripts/deploy-iis.ps1` ใส่ `app_offline.htm` → หยุดเฉพาะ App Pool ของเว็บ → สำรองเวอร์ชันเดิม → mirror ไฟล์ publish → นำหน้า maintenance ออก → เปิด App Pool → ตรวจ URL หากระบุ เว็บหยุดให้บริการช่วงสั้น ๆ ระหว่างการอัปเดต
+- เมื่อ copy, start หรือ health check ล้มเหลว จะคืนไฟล์สำรองและเปิด App Pool กลับ พร้อมรายงาน build ว่าล้มเหลว หาก rollback ล้มเหลวจะคงหน้า maintenance ไว้และแจ้งที่อยู่ backup สำหรับกู้คืนด้วยมือ
+- เก็บ `appsettings*.json`, `.git`, `logs`, `uploads` และ `App_Data` ที่มีอยู่บนเซิร์ฟเวอร์ โดย mirror เฉพาะไฟล์แอป ลบไฟล์แอปเก่าที่ไม่มีใน publish ใหม่ สำรองอยู่นอก web root ที่ `C:\inetpub\deploy-backups\test-deploy\<เวลา>-<รหัส>` และยังไม่ลบ backup อัตโนมัติ
+- ป้องกัน deployment บนเครื่องเดียวกันรันซ้อนด้วย mutex จำกัด pipeline 20 นาที และเก็บประวัติ 20 builds พร้อม artifacts ของ 5 builds ล่าสุด หากเครื่องหรือ agent ถูกปิดระหว่าง deploy ให้ตรวจ `app_offline.htm`, สถานะ App Pool และ backup ก่อนรันใหม่
+
+ทดสอบสคริปต์ด้วยข้อมูลจำลองใน `.local` โดยไม่แตะ IIS จริง:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-deploy-iis.ps1
+```
+
+อ้างอิง: [Jenkins Pipeline syntax](https://www.jenkins.io/doc/book/pipeline/syntax/), [GitHub webhook plugin](https://plugins.jenkins.io/github/), [ASP.NET Core on IIS](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-10.0)
+
 ## Build และตรวจสอบ
 
 หาก build แจ้ง `MSB3027`/`MSB3021` ว่า EmployeeManagement.exe ถูก process ใช้งานอยู่ ให้กด **Ctrl+C ใน terminal ที่รันเว็บเดิม** ก่อน build หรือใช้ start-local.ps1 ซึ่งจะหยุดเฉพาะ EmployeeManagement ที่อยู่ในโฟลเดอร์ output ของโปรเจกต์นี้ก่อน build ถ้าสิทธิ์ไม่พอ สคริปต์จะแจ้งให้ปิดเว็บเดิมด้วย Ctrl+C
@@ -245,6 +294,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test.ps1 -MySql
 
 ตรวจ Apache ของ XAMPP ที่ `http://127.0.0.1:8080/` ตอบ HTTP 200 แล้ว ซึ่งเป็นคนละ process/port กับเว็บ EmployeeManagement ที่จะรันบน 5034
 
-Sandbox ยังบล็อก socket ไป `api.nuget.org` (`NU1301`) จึงยัง restore/build แอปหลัก หรือรัน EF migration และ integration tests ไม่ได้ ฐานข้อมูลที่เตรียมไว้ยังไม่มีตาราง ไฟล์ InitialCreate/Designer/Snapshot จัดทำไว้ใน source โดยยังไม่ได้ยืนยันด้วย `dotnet ef` ในสภาพแวดล้อมนี้ ให้รัน `start-local.cmd` หรือคำสั่ง start-local.ps1 ใน PowerShell ปกติที่เข้าถึง NuGet ได้เพื่อดำเนินการต่อ
+การตรวจล่าสุดรัน `scripts/test.ps1` ผ่าน 33 checks และ JavaScript syntax พร้อม `dotnet publish --configuration Release --no-restore` สำเร็จโดยใช้ packages ที่มีอยู่แล้ว สคริปต์ deploy ผ่าน 75 checks โดยใช้ Robocopy จริงกับโฟลเดอร์จำลองและคำสั่ง IIS จำลอง ครอบคลุมอัปเดตสำเร็จ, copy/start/health check ล้มเหลว, rollback, การเก็บ server settings และการปฏิเสธ App Pool ที่ใช้ร่วมกัน Jenkins ตรวจ syntax ของ Jenkinsfile ผ่านแล้ว และ job เตรียมค่า Production บน agent จริงสำเร็จพร้อมเว็บตอบ HTTP 200 ดูผล deployment ล่าสุดใน job `test-deploy` ของ Jenkins รอบนี้ไม่ได้รัน EF migrations หรือ MySQL integration tests
 
 แอปนี้ไม่มีระบบ login หรือกำหนดสิทธิ์ผู้ใช้ตามขอบเขต CRUD ที่ระบุ
